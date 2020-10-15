@@ -37,15 +37,14 @@ class TestProcessProto(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Setup environment and start pybitmessage"""
-        logger.error('Hello I am the setupClass')
+        print("setUpClass {} start.".format(cls.__name__))
         cls.home = os.environ['BITMESSAGE_HOME'] = tempfile.gettempdir()
         put_signal_file(cls.home, 'unittest.lock')
         subprocess.call(cls._process_cmd)  # nosec
         time.sleep(5)
         cls.pid = int(cls._get_readline('singleton.lock'))
         cls.process = psutil.Process(cls.pid)
-        print('traceback in setupClass')
-        print(traceback.format_stack())
+        print("setUpClass {} end.".format(cls.__name__))
 
     @classmethod
     def _get_readline(cls, pfile):
@@ -58,15 +57,14 @@ class TestProcessProto(unittest.TestCase):
 
     @classmethod
     def _stop_process(cls, timeout=120):
+        print("_stop_process {} sending TERM.".format(cls.__name__))
         cls.process.send_signal(signal.SIGTERM)
         try:
-            print('In the _stop_process_ method ,after the term signal wait process are started')
+            print("_stop_process {} waiting after TERM.".format(cls.__name__))
             cls.process.wait(timeout)
-            print('In the _stop_process_ method ,wait process are completed')
+            print("_stop_process {} wait for TERM success.".format(cls.__name__))
         except psutil.TimeoutExpired:
-            print('traceback in _stop_process')
-            print(traceback.format_stack())
-            print('In the _stop_process_ method ,psutil.timoutExpired is occured')
+            print("_stop_process {} wait for TERM TimeoutExpired.".format(cls.__name__))
             return False
 
         return True
@@ -84,20 +82,15 @@ class TestProcessProto(unittest.TestCase):
         """Ensures that pybitmessage stopped and removes files"""
         try:
             if not cls._stop_process():
-                print('In the tearDownClass ,initiating the process Killing')
+                print("_stop_process {} sending KILL.".format(cls.__name__))
                 cls.process.kill()
-                print('In the tearDownClass ,initiating the process wait')
+                print("_stop_process {} waiting after KILL.".format(cls.__name__))
                 cls.process.wait(5)
-                print('In the tearDownClass ,Process killied ?')
+                print("_stop_process {} wait for KILL success.".format(cls.__name__))
         except (psutil.NoSuchProcess, FileNotFoundError, AttributeError) as e:
-            print('In the tearDownClass ,psutil.NoSuchProcess,FileNotFoundError, AttributeError')
-            print('traceback in tearDownClass')
-            traceback.format_stack()
-            print(str(e))
+            print("_stop_process {} wait for KILL non fatal error.".format(cls.__name__))
         except psutil.TimeoutExpired as e:
-            print('In the tearDownClass ,psutil.TimeoutExpired is occurred')
-            traceback.format_stack()
-            print(str(e))
+            print("_stop_process {} wait for KILL TimeoutExpired.".format(cls.__name__))
         finally:
             cls._cleanup_files()
 
@@ -135,6 +128,7 @@ class TestProcessShutdown(TestProcessProto):
     @classmethod
     def tearDownClass(cls):
         """Special teardown because pybitmessage is already stopped"""
+        print("tearDownClass in {}, is_running: {}".format(cls.__name__, cls.process.is_running()))
         cls._cleanup_files()
 
 
