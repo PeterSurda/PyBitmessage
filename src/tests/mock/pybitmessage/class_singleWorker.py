@@ -12,11 +12,11 @@ from network import StoppableThread
 from six.moves import queue
 
 
-class MockSingleWorker(StoppableThread):
+class singleWorker(StoppableThread):
     """Thread for performing PoW"""
 
     def __init__(self):
-        super(MockSingleWorker, self).__init__(name="singleWorker")
+        super(singleWorker, self).__init__(name="singleWorker")
         proofofwork.init()
         self.busy = None
 
@@ -27,7 +27,7 @@ class MockSingleWorker(StoppableThread):
             queues.workerQueue.put(("stopThread", "data"))
         except queue.Full:
             self.logger.error('workerQueue is Full')
-        super(MockSingleWorker, self).stopThread()
+        super(singleWorker, self).stopThread()
 
     def run(self):
 
